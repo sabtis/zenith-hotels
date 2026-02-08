@@ -1,4 +1,4 @@
-const CACHE_NAME = 'luxvago-v3.5.1-sovereign';
+const CACHE_NAME = 'luxvago-v10.0.0-sovereign';
 
 const ASSETS = ['/', '/index.html', '/manifest.json'];
 
