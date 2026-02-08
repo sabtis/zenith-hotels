@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useEffect, useCallback, lazy, Suspense } from 'react';
-import { Search, RefreshCcw, Home, Map as MapIcon, User, Fingerprint, Loader2, Signal, Zap, Activity } from 'lucide-react';
+import { Search, RefreshCcw, Home, Map as MapIcon, User, Fingerprint, Loader2, Signal, Zap, Activity, DollarSign } from 'lucide-react';
 import { MOCK_HOTELS, APP_VERSION } from '../constants';
 import HotelCard from '../components/HotelCard';
 import { streamSovereignSearch } from '../services/aiService';
 
 const AccountScreen = lazy(() => import('../components/AccountScreen'));
 const HotelMap = lazy(() => import('../components/HotelMap'));
-
+const PinLock = lazy(() => import('../components/PinLock'));
+const FinancialDashboard = lazy(() => import('../components/FinancialDashboard'));
 const Index = () => {
   const [view, setView] = useState<'home' | 'detail' | 'map' | 'account'>('home');
   const [searchQuery, setSearchQuery] = useState('');
@@ -14,6 +15,9 @@ const Index = () => {
   const [isBooting, setIsBooting] = useState(true);
   const [isRecalibrating, setIsRecalibrating] = useState(false);
   const [recommendedIds, setRecommendedIds] = useState<string[]>([]);
+  const [showPinLock, setShowPinLock] = useState(false);
+  const [isAccountUnlocked, setIsAccountUnlocked] = useState(false);
+  const [showFinancial, setShowFinancial] = useState(false);
   const [aiBriefing, setAiBriefing] = useState<string | null>(null);
 
   useEffect(() => {
@@ -147,8 +151,19 @@ const Index = () => {
           )}
 
           <Suspense fallback={<div className="p-20 text-center text-gold text-[10px] font-black uppercase tracking-[0.4em] animate-pulse">Sincronizando Módulo...</div>}>
-            {view === 'account' && <AccountScreen stats={{} as any} onOpenAdmin={() => { }} onOpenBusiness={() => { }} currentTheme="dark" onToggleTheme={() => { }} swStatus="active" isInstallReady={false} onInstallApp={async () => true} />}
+            {view === 'account' && <AccountScreen stats={{} as any} onOpenAdmin={() => { }} onOpenBusiness={() => setShowFinancial(true)} currentTheme="dark" onToggleTheme={() => { }} swStatus="active" isInstallReady={false} onInstallApp={async () => true} />}
             {view === 'map' && <HotelMap hotels={MOCK_HOTELS} initialSelectedId={null} onSelectHotel={() => { }} isWishlisted={() => false} onToggleWishlist={() => { }} isDarkMode={true} />}
+          </Suspense>
+
+          {/* PIN Lock for Account */}
+          <Suspense fallback={null}>
+            {showPinLock && (
+              <PinLock 
+                onUnlock={() => { setShowPinLock(false); setIsAccountUnlocked(true); setView('account'); }} 
+                onCancel={() => setShowPinLock(false)} 
+              />
+            )}
+            {showFinancial && <FinancialDashboard onClose={() => setShowFinancial(false)} />}
           </Suspense>
         </main>
 
@@ -161,7 +176,11 @@ const Index = () => {
             <MapIcon size={22} />
             <span className="text-[7px] font-black uppercase">Mapa</span>
           </button>
-          <button onClick={() => setView('account')} className={`flex flex-col items-center gap-1 transition-all ${view === 'account' ? 'text-gold scale-110' : 'text-zinc-600'}`}>
+          <button onClick={() => setShowFinancial(true)} className={`flex flex-col items-center gap-1 transition-all text-zinc-600`}>
+            <DollarSign size={22} />
+            <span className="text-[7px] font-black uppercase">Finanças</span>
+          </button>
+          <button onClick={() => isAccountUnlocked ? setView('account') : setShowPinLock(true)} className={`flex flex-col items-center gap-1 transition-all ${view === 'account' ? 'text-gold scale-110' : 'text-zinc-600'}`}>
             <User size={22} />
             <span className="text-[7px] font-black uppercase">Conta</span>
           </button>
