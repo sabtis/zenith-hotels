@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Lock, X, Shield, Award, Crown, Activity, Users, Terminal, BarChart3, TrendingUp, Save, Briefcase, Eye
+  Lock, X, Shield, Award, Crown, Activity, Users, Terminal, BarChart3, TrendingUp, Save, Briefcase, Eye, ShieldCheck
 } from 'lucide-react';
 import { MOCK_HOTELS } from '../constants';
 
@@ -53,7 +53,7 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <div className="bg-[#0c0d0f] w-full max-w-[360px] rounded-[3rem] p-12 border border-gold/20 text-center space-y-10">
           <div className="w-20 h-20 bg-gold/10 text-gold rounded-full flex items-center justify-center mx-auto border border-gold/20 shadow-xl"><Lock size={32} /></div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-black text-white font-serif italic">Gabinete HQ</h2>
+            <h2 className="text-2xl font-black text-white serif italic">Gabinete HQ</h2>
             <p className="text-[8px] text-zinc-500 font-black uppercase tracking-[0.4em]">Autenticação do Arquiteto</p>
           </div>
           <form onSubmit={handleUnlock} className="space-y-8">
@@ -62,7 +62,7 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               onChange={(e) => setPin(e.target.value)}
               className="w-full text-center text-5xl font-black bg-white/5 border border-white/10 rounded-2xl py-6 text-gold outline-none focus:border-gold"
             />
-            <button className="w-full bg-gold text-background py-6 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl active:scale-95 transition-all">Acessar HQ</button>
+            <button className="w-full bg-gold text-onyx py-6 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl active:scale-95 transition-all">Acessar HQ</button>
           </form>
         </div>
       </div>
@@ -73,7 +73,7 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     <div className="absolute inset-0 z-[9000] bg-[#050608] flex flex-col animate-in slide-in-from-bottom duration-500">
       <header className="p-8 border-b border-white/5 flex justify-between items-center bg-[#0c0d0f]">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-gold rounded-xl flex items-center justify-center font-black text-background shadow-lg">Z</div>
+          <div className="w-10 h-10 bg-gold rounded-xl flex items-center justify-center font-black text-onyx shadow-lg">Z</div>
           <div>
             <h1 className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Sovereign Command <span className="text-gold/50 text-[7px] ml-2">V10.0.0-N</span></h1>
             <p className="text-[7px] text-gold font-bold uppercase tracking-widest">Protocol Architect: Marcos Carvalho</p>
@@ -104,10 +104,10 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <div className="space-y-10 animate-in fade-in">
             <div className="flex justify-between items-end">
               <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-white font-serif italic">Aportes de Aderência</h3>
+                <h3 className="text-2xl font-bold text-white serif italic">Aportes de Aderência</h3>
                 <p className="text-[9px] text-zinc-500 font-black uppercase tracking-widest">Configure os valores nominais de entrada</p>
               </div>
-              <button onClick={saveTreasury} className="px-6 py-4 bg-gold text-background rounded-2xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl"><Save size={14} /> Salvar Alterações</button>
+              <button onClick={saveTreasury} className="px-6 py-4 bg-gold text-onyx rounded-2xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl"><Save size={14} /> Salvar Alterações</button>
             </div>
 
             <div className="grid grid-cols-1 gap-6">
@@ -138,7 +138,7 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               <div className="absolute top-0 right-0 p-8 opacity-5"><TrendingUp size={120} /></div>
               <p className="text-[11px] text-gold font-black uppercase tracking-[0.4em] mb-4">Volume Total de Aportes (TVL)</p>
               <p className="text-6xl font-black text-white tracking-tighter relative z-10">$142,500.00</p>
-              <div className="mt-6 inline-flex items-center gap-2 px-4 py-1.5 bg-emerald/10 text-emerald border border-emerald/20 rounded-full text-[9px] font-black uppercase tracking-widest">
+              <div className="mt-6 inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 text-emerald-500 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">
                 <Activity size={12} /> Rede em Conformidade
               </div>
             </div>
@@ -148,7 +148,7 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         {activeTab === 'aderentes' && (
           <div className="space-y-10 animate-in fade-in">
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-white font-serif italic">Protocolo de Aderência</h3>
+              <h3 className="text-2xl font-bold text-white serif italic">Protocolo de Aderência</h3>
               <p className="text-[9px] text-zinc-500 font-black uppercase tracking-widest">Gestão de membros e isolamento de rede</p>
             </div>
 
@@ -167,10 +167,10 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="px-3 py-1 bg-emerald/10 text-emerald text-[8px] font-black uppercase tracking-widest border border-emerald/20 rounded-full">{adherent.status}</span>
+                    <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-widest border border-emerald-500/20 rounded-full">{adherent.status}</span>
                     <button
                       onClick={() => handleDissolution(adherent.name)}
-                      className="p-3 text-zinc-600 hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all"
+                      className="p-3 text-zinc-600 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
                     >
                       <X size={16} />
                     </button>
@@ -180,10 +180,10 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
               {removedAdherents.length > 0 && (
                 <div className="pt-10 space-y-4">
-                  <h4 className="text-[10px] font-black text-destructive/50 uppercase tracking-[0.3em]">Membros em Quarentena de Dissolução</h4>
+                  <h4 className="text-[10px] font-black text-red-500/50 uppercase tracking-[0.3em]">Membros em Quarentena de Dissolução</h4>
                   {removedAdherents.map(name => (
-                    <div key={name} className="p-6 bg-destructive/5 border border-destructive/10 rounded-3xl flex justify-between items-center opacity-60">
-                      <span className="text-xs text-destructive font-bold">{name}</span>
+                    <div key={name} className="p-6 bg-red-500/5 border border-red-500/10 rounded-3xl flex justify-between items-center opacity-60">
+                      <span className="text-xs text-red-500 font-bold">{name}</span>
                       <button
                         onClick={() => {
                           const updated = removedAdherents.filter(n => n !== name);
@@ -211,12 +211,12 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   <div className="flex items-center gap-6">
                     <img src={hotel.image} className="w-16 h-16 rounded-2xl object-cover shadow-2xl border border-white/10" alt="" />
                     <div>
-                      <p className="text-lg font-bold text-white font-serif italic">{hotel.name}</p>
+                      <p className="text-lg font-bold text-white serif italic">{hotel.name}</p>
                       <p className="text-[8px] text-zinc-500 font-black uppercase tracking-widest">Sovereignty Score: {hotel.sovereigntyAudit?.securityScore}%</p>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <span className="text-[8px] px-3 py-1 bg-emerald/10 text-emerald border border-emerald/20 rounded-full font-black uppercase tracking-widest">Ativo Sincronizado</span>
+                    <span className="text-[8px] px-3 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full font-black uppercase tracking-widest">Ativo Sincronizado</span>
                     <p className="text-[6px] text-zinc-700 font-mono tracking-widest">ZX-{hotel.id}998-MARCOS</p>
                   </div>
                 </div>
@@ -225,10 +225,10 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="space-y-4">
               <h3 className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.3em] flex items-center gap-3"><Terminal size={16} className="text-gold" /> Protocol Event Log</h3>
               <div className="bg-black/80 p-8 rounded-[2rem] font-mono text-[9px] space-y-3 border border-white/5 h-64 overflow-y-auto hide-scrollbar shadow-inner leading-relaxed">
-                <p className="text-emerald/70"><span className="text-zinc-700">[SYSTEM]</span> Kernel Vercel Edge 7.3.1 - Conectado via Shibuya Cluster.</p>
+                <p className="text-emerald-500/70"><span className="text-zinc-700">[SYSTEM]</span> Kernel Vercel Edge 7.3.1 - Conectado via Shibuya Cluster.</p>
                 <p className="text-gold/70"><span className="text-zinc-700">[TREASURY]</span> Sincronia de Preços detectada. Novo Delta de Aporte aplicado.</p>
                 <p className="text-zinc-500"><span className="text-zinc-700">[AUDIT]</span> Auditoria regional Grand Azure Maldivas: 100% Autonomia.</p>
-                <p className="text-emerald/70"><span className="text-zinc-700">[CURADORIA]</span> Hotel Asset ID:1 marcado como "Zenith Award Level 3".</p>
+                <p className="text-emerald-500/70"><span className="text-zinc-700">[CURADORIA]</span> Hotel Asset ID:1 marcado como "Zenith Award Level 3".</p>
                 <p className="text-white/30"><span className="text-zinc-700">[HQ]</span> Sessão do Arquiteto Marcos Carvalho iniciada.</p>
               </div>
             </div>
@@ -238,7 +238,7 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         {activeTab === 'infra' && (
           <div className="space-y-10 animate-in fade-in">
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-white font-serif italic">Sincronização Soberana</h3>
+              <h3 className="text-2xl font-bold text-white serif italic">Sincronização Soberana</h3>
               <p className="text-[9px] text-zinc-500 font-black uppercase tracking-widest">Transfira o estado do protocolo entre dispositivos (Notebook ↔ Mobile)</p>
             </div>
 
@@ -261,7 +261,7 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                       navigator.clipboard.writeText(blob);
                       alert("Credencial Zenith copiada para a área de transferência.");
                     }}
-                    className="flex-1 bg-gold text-background py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all"
+                    className="flex-1 bg-gold text-onyx py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all"
                   >
                     Exportar Credencial
                   </button>
@@ -291,8 +291,8 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 </div>
               </div>
 
-              <div className="p-8 bg-destructive/5 rounded-[2.5rem] border border-destructive/10 space-y-4">
-                <p className="text-[10px] font-black text-destructive uppercase tracking-widest">Zona de Dissolução Local</p>
+              <div className="p-8 bg-red-500/5 rounded-[2.5rem] border border-red-500/10 space-y-4">
+                <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">Zona de Dissolução Local</p>
                 <button
                   onClick={() => {
                     if (confirm("Deseja resetar o cache local e as credenciais deste dispositivo?")) {
@@ -300,7 +300,7 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                       window.location.reload();
                     }
                   }}
-                  className="w-full py-4 border border-destructive/20 text-destructive/50 hover:text-destructive rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all"
+                  className="w-full py-4 border border-red-500/20 text-red-500/50 hover:text-red-500 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all"
                 >
                   Resetar Cache da Rede
                 </button>
