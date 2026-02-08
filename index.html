@@ -40,56 +40,40 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Service Worker Registration - Zenith Nucleus Protocol -->
+    <!-- Service Worker Registration - Zenith Stable Protocol -->
     <script>
       (function() {
         if (!('serviceWorker' in navigator)) return;
         
-        const SW_VERSION = 'v11.0.0';
-        const swUrl = '/sw.js?nucleus=' + SW_VERSION + '&t=' + Date.now();
+        // Previne loops de reload
+        const RELOAD_KEY = 'zenith-sw-reload';
+        const lastReload = sessionStorage.getItem(RELOAD_KEY);
+        const now = Date.now();
         
-        // Força limpeza de SWs antigos antes de registrar novo
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-          const updatePromises = registrations.map(reg => {
-            if (reg.waiting) {
-              reg.waiting.postMessage('FORCE_UPDATE');
-            }
-            return reg.update();
-          });
-          
-          return Promise.all(updatePromises);
-        }).then(() => {
-          return navigator.serviceWorker.register(swUrl, { 
-            updateViaCache: 'none',
-            scope: '/'
-          });
-        }).then(registration => {
-          console.log('[Zenith] SW registered:', registration.scope);
-          
-          // Detecta atualizações disponíveis
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            console.log('[Zenith] New SW installing...');
+        if (lastReload && (now - parseInt(lastReload)) < 5000) {
+          console.log('[Zenith] Skipping SW registration - recent reload');
+          return;
+        }
+        
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then(registration => {
+            console.log('[Zenith] SW registered:', registration.scope);
             
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('[Zenith] New SW ready - reloading');
-                window.location.reload();
-              }
-            });
-          });
-          
-          // Força update check a cada 30 segundos
-          setInterval(() => registration.update(), 30000);
-          
-        }).catch(err => {
-          console.error('[Zenith] SW registration failed:', err);
-        });
+            // Verifica updates periodicamente (não no primeiro load)
+            setTimeout(() => {
+              registration.update();
+              setInterval(() => registration.update(), 60000);
+            }, 30000);
+          })
+          .catch(err => console.error('[Zenith] SW failed:', err));
         
-        // Listener para quando o SW assume controle
+        // Reload controlado quando há nova versão
+        let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          console.log('[Zenith] Controller changed - reloading');
-          window.location.reload();
+          if (refreshing) return;
+          refreshing = true;
+          sessionStorage.setItem(RELOAD_KEY, now.toString());
+          console.log('[Zenith] Controller updated');
         });
       })();
     </script>
