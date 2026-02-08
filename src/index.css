@@ -161,8 +161,8 @@
 }
 
 .leaflet-tile-pane {
-  filter: saturate(0.8) brightness(0.85) contrast(1.1) !important;
-  transition: filter 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: saturate(1.1) brightness(0.9) contrast(1.05) !important;
+  transition: filter 0.5s ease;
 }
 
 .leaflet-control-zoom {
@@ -185,52 +185,59 @@
   border: none !important;
 }
 
-.custom-marker-node {
-  background: rgba(0, 0, 0, 0.85) !important;
-  backdrop-filter: blur(8px);
-  color: hsl(var(--gold)) !important;
-  padding: 6px 12px;
-  border-radius: 12px;
-  font-weight: 900;
-  font-size: 12px;
-  border: 1px solid hsl(var(--gold) / 0.4);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
-  white-space: nowrap;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+/* Zenith Marker Style */
+.zenith-marker {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 10px;
+  border: 1px solid hsl(var(--gold) / 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px hsl(var(--gold) / 0.2);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
 }
 
-.custom-marker-node::before {
-  content: '$';
-  font-size: 8px;
-  opacity: 0.6;
-}
-
-.custom-marker-node:hover {
-  transform: scale(1.1);
-  box-shadow: 0 15px 40px -10px hsl(var(--gold) / 0.5);
-}
-
-.zenith-pulse {
-  position: relative;
-}
-
-.zenith-pulse::after {
+.zenith-marker::before {
   content: '';
   position: absolute;
-  inset: -4px;
-  border-radius: 14px;
-  border: 2px solid hsl(var(--gold));
-  animation: radar-pulse 2s infinite;
-  pointer-events: none;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(0, 0, 0, 0.85);
 }
 
-@keyframes radar-pulse {
-  0% { transform: scale(1); opacity: 0.8; }
-  100% { transform: scale(1.8); opacity: 0; }
+.zenith-marker::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid hsl(var(--gold) / 0.3);
+}
+
+.zenith-marker-price {
+  color: hsl(var(--gold));
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+.zenith-marker:hover {
+  transform: scale(1.15) translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7), 0 0 20px hsl(var(--gold) / 0.4);
+  border-color: hsl(var(--gold) / 0.8);
+}
+
+.zenith-marker:hover .zenith-marker-price {
+  text-shadow: 0 0 8px hsl(var(--gold) / 0.6);
 }
 
 @layer utilities {
