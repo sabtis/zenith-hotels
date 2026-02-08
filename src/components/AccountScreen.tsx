@@ -20,11 +20,13 @@ interface AccountScreenProps {
   swStatus: string;
   isInstallReady: boolean;
   onInstallApp: () => Promise<boolean>;
+  onLogout?: () => void;
 }
 
 const AccountScreen: React.FC<AccountScreenProps> = ({
   stats,
   onOpenBusiness,
+  onLogout,
 }) => {
   // Valores padrão para evitar crash quando stats está vazio
   const safeStats = {
@@ -128,7 +130,7 @@ const AccountScreen: React.FC<AccountScreenProps> = ({
       </div>
 
       {/* Business CTA */}
-      <div className="p-8">
+      <div className="p-8 space-y-3">
         <button
           onClick={onOpenBusiness}
           className="w-full p-5 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-between transition-all hover:bg-gold/15 active:scale-[0.98]"
@@ -142,6 +144,15 @@ const AccountScreen: React.FC<AccountScreenProps> = ({
           </div>
           <ChevronRight size={18} className="text-gold/60" />
         </button>
+
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="w-full p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-bold transition-all hover:bg-red-500/15 active:scale-[0.98]"
+          >
+            Sair da Conta
+          </button>
+        )}
       </div>
     </div>
   );

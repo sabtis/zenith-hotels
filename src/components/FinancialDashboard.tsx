@@ -5,15 +5,17 @@ interface FinancialDashboardProps {
   onClose: () => void;
 }
 
-const TIERS = [
-  { name: 'Tier I', value: 500, color: 'text-zinc-400', bg: 'bg-zinc-500/10' },
-  { name: 'Tier II', value: 1500, color: 'text-gold', bg: 'bg-gold/10' },
-  { name: 'Tier III', value: 5000, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+// Get tier values from localStorage (set via AdminDashboard)
+const getTierValues = () => [
+  { name: 'Tier I', value: Number(localStorage.getItem('zenith_tier1_price')) || 300, color: 'text-zinc-400', bg: 'bg-zinc-500/10' },
+  { name: 'Tier II', value: Number(localStorage.getItem('zenith_tier2_price')) || 650, color: 'text-gold', bg: 'bg-gold/10' },
+  { name: 'Tier III', value: Number(localStorage.getItem('zenith_tier3_price')) || 950, color: 'text-purple-400', bg: 'bg-purple-500/10' },
 ];
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'BRL', 'CNY', 'BTC'];
 
 const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ onClose }) => {
+  const [tiers, setTiers] = useState(getTierValues);
   const [amount, setAmount] = useState('1000');
   const [fromCurrency, setFromCurrency] = useState('EUR');
   const [toCurrency, setToCurrency] = useState('USD');
@@ -22,6 +24,11 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ onClose }) => {
     AUD: 1.65, CAD: 1.47, BRL: 5.42, CNY: 7.82, BTC: 0.000016
   });
   const [loading, setLoading] = useState(false);
+  
+  // Refresh tiers when component mounts or localStorage changes
+  useEffect(() => {
+    setTiers(getTierValues());
+  }, []);
 
   const convert = (value: number, from: string, to: string): number => {
     const inEUR = from === 'EUR' ? value : value / rates[from];
@@ -73,11 +80,11 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ onClose }) => {
               Níveis de Parceria
             </h3>
             <div className="space-y-3">
-              {TIERS.map((tier) => (
+              {tiers.map((tier) => (
                 <div key={tier.name} className={`p-4 rounded-2xl ${tier.bg} border border-white/5`}>
                   <div className="flex justify-between items-center">
                     <span className={`text-sm font-bold ${tier.color}`}>{tier.name}</span>
-                    <span className="text-xl font-black text-white">€{tier.value.toLocaleString()}</span>
+                    <span className="text-xl font-black text-white">${tier.value.toLocaleString()}</span>
                   </div>
                 </div>
               ))}

@@ -151,19 +151,31 @@ const Index = () => {
           )}
 
           <Suspense fallback={<div className="p-20 text-center text-gold text-[10px] font-black uppercase tracking-[0.4em] animate-pulse">Sincronizando Módulo...</div>}>
-            {view === 'account' && <AccountScreen stats={{} as any} onOpenAdmin={() => { }} onOpenBusiness={() => setShowFinancial(true)} currentTheme="dark" onToggleTheme={() => { }} swStatus="active" isInstallReady={false} onInstallApp={async () => true} />}
+            {view === 'account' && (
+              <AccountScreen 
+                stats={{} as any} 
+                onOpenAdmin={() => { }} 
+                onOpenBusiness={() => setShowFinancial(true)} 
+                currentTheme="dark" 
+                onToggleTheme={() => { }} 
+                swStatus="active" 
+                isInstallReady={false} 
+                onInstallApp={async () => true}
+                onLogout={() => { setIsAccountUnlocked(false); setView('home'); }}
+              />
+            )}
             {view === 'map' && <HotelMap hotels={MOCK_HOTELS} initialSelectedId={null} onSelectHotel={() => { }} isWishlisted={() => false} onToggleWishlist={() => { }} isDarkMode={true} />}
           </Suspense>
 
           {/* PIN Lock for Account */}
           <Suspense fallback={null}>
-            {showPinLock && (
+          {showPinLock && (
               <PinLock 
                 onUnlock={() => { setShowPinLock(false); setIsAccountUnlocked(true); setView('account'); }} 
-                onCancel={() => setShowPinLock(false)} 
+                onCancel={() => { setShowPinLock(false); setView('home'); }} 
               />
             )}
-            {showFinancial && <FinancialDashboard onClose={() => setShowFinancial(false)} />}
+            {showFinancial && <FinancialDashboard onClose={() => { setShowFinancial(false); setView('home'); }} />}
           </Suspense>
         </main>
 
@@ -176,10 +188,12 @@ const Index = () => {
             <MapIcon size={22} />
             <span className="text-[7px] font-black uppercase">Mapa</span>
           </button>
-          <button onClick={() => setShowFinancial(true)} className={`flex flex-col items-center gap-1 transition-all text-zinc-600`}>
-            <DollarSign size={22} />
-            <span className="text-[7px] font-black uppercase">Finanças</span>
-          </button>
+          {isAccountUnlocked && (
+            <button onClick={() => setShowFinancial(true)} className={`flex flex-col items-center gap-1 transition-all text-zinc-600`}>
+              <DollarSign size={22} />
+              <span className="text-[7px] font-black uppercase">Finanças</span>
+            </button>
+          )}
           <button onClick={() => isAccountUnlocked ? setView('account') : setShowPinLock(true)} className={`flex flex-col items-center gap-1 transition-all ${view === 'account' ? 'text-gold scale-110' : 'text-zinc-600'}`}>
             <User size={22} />
             <span className="text-[7px] font-black uppercase">Conta</span>
