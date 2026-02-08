@@ -7,8 +7,8 @@ import { Hotel, PlaybookGuideline, SovereigntyAudit, SentimentScores } from './t
 
 export type { Hotel, PlaybookGuideline, SovereigntyAudit, SentimentScores };
 
-// CONTROLE DE VERSÃO SOBERANO
-export const APP_VERSION = "3.5.1-SOVEREIGN";
+// CONTROLE DE VERSÃO SOBERANO - v11.0.0-NUCLEUS
+export const APP_VERSION = "11.0.0-NUCLEUS";
 
 export const SOVEREIGN_PLAYBOOK: PlaybookGuideline[] = [
   { id: "P1", pilar: "Blindagem de Dados", directive: "A identidade do aderente é um ativo criptografado.", action: "Nenhum dado sensível é armazenado em nuvens públicas.", icon: "Shield" },

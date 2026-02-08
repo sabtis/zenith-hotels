@@ -27,20 +27,40 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Protocolo de Recalibração Manual (Mobile Hard Reset)
+  // Protocolo de Recalibração Nuclear - Zenith v11.0.0
   const forceSync = async () => {
     setIsRecalibrating(true);
     try {
+      // 1. Desregistra TODOS os Service Workers
       if ('serviceWorker' in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        for (const r of regs) await r.unregister();
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(r => r.unregister()));
+        console.log('[Zenith] All SWs unregistered');
       }
+      
+      // 2. Limpa TODOS os caches
       if ('caches' in window) {
-        const keys = await caches.keys();
-        await Promise.all(keys.map(k => caches.delete(k)));
+        const cacheKeys = await caches.keys();
+        await Promise.all(cacheKeys.map(k => caches.delete(k)));
+        console.log('[Zenith] All caches purged:', cacheKeys);
       }
-      setTimeout(() => window.location.reload(), 1000);
-    } catch {
+      
+      // 3. Limpa localStorage de versões antigas (preserva dados do usuário)
+      const preserveKeys = ['zenith-tier-values', 'zenith-wishlist'];
+      const allKeys = Object.keys(localStorage);
+      allKeys.forEach(key => {
+        if (!preserveKeys.includes(key) && key.startsWith('zenith-cache')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      // 4. Força reload com cache bypass
+      setTimeout(() => {
+        window.location.href = window.location.origin + '?refresh=' + Date.now();
+      }, 500);
+      
+    } catch (error) {
+      console.error('[Zenith] Force sync error:', error);
       window.location.reload();
     }
   };
