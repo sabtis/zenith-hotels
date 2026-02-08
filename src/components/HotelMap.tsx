@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { X, Star, ChevronRight, Navigation } from 'lucide-react';
+import { X, Star, ChevronRight, Navigation, RefreshCw, Compass } from 'lucide-react';
 import { Hotel, TIER_COLORS, TIER_BG } from '../constants';
 
 interface HotelMapProps {
@@ -24,6 +24,34 @@ const HotelMap: React.FC<HotelMapProps> = ({
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(
     hotels.find(h => h.id === initialSelectedId) || null
   );
+  const [mapCenter, setMapCenter] = useState<{ lat: string; lng: string }>({ lat: '--', lng: '--' });
+
+  const updateMapCenter = (map: L.Map) => {
+    const center = map.getCenter();
+    setMapCenter({
+      lat: center.lat.toFixed(2),
+      lng: center.lng.toFixed(2),
+    });
+  };
+
+  const handleRefreshArea = () => {
+    if (mapInstanceRef.current) {
+      const bounds = mapInstanceRef.current.getBounds();
+      const visibleHotels = hotels.filter(h => 
+        bounds.contains([h.coordinates.lat, h.coordinates.lng])
+      );
+      console.log('Hotéis visíveis:', visibleHotels.length);
+    }
+  };
+
+  const handleResetView = () => {
+    if (mapInstanceRef.current && hotels.length > 0) {
+      const bounds = L.latLngBounds(
+        hotels.map(h => [h.coordinates.lat, h.coordinates.lng])
+      );
+      mapInstanceRef.current.flyToBounds(bounds, { padding: [50, 50], duration: 1.5 });
+    }
+  };
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -38,29 +66,38 @@ const HotelMap: React.FC<HotelMapProps> = ({
       maxZoom: 18,
     });
 
-    // Tiles coloridos com estilo elegante
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    // Tiles de satélite ESRI para visual rico
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
     }).addTo(map);
 
-    // Adiciona controle de zoom no canto superior direito
-    L.control.zoom({ position: 'topright' }).addTo(map);
+    // Adiciona labels por cima do satélite
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      pane: 'overlayPane',
+    }).addTo(map);
 
     mapInstanceRef.current = map;
 
+    // Atualiza coordenadas no movimento
+    map.on('moveend', () => updateMapCenter(map));
+    updateMapCenter(map);
+
     // Adiciona marcadores para cada hotel
     hotels.forEach((hotel) => {
-      const priceLabel = `$${(hotel.price / 1000).toFixed(1)}k`;
+      const priceK = hotel.price >= 1000 
+        ? `$${(hotel.price / 1000).toFixed(hotel.price >= 10000 ? 0 : 1)}k`
+        : `$${hotel.price}`;
       
       const markerIcon = L.divIcon({
         className: 'custom-marker-wrapper',
         html: `
-          <div class="custom-marker-node zenith-pulse">
-            ${priceLabel}
+          <div class="zenith-marker">
+            <span class="zenith-marker-price">${priceK}</span>
           </div>
         `,
-        iconSize: [80, 40],
-        iconAnchor: [40, 20],
+        iconSize: [70, 36],
+        iconAnchor: [35, 18],
       });
 
       const marker = L.marker([hotel.coordinates.lat, hotel.coordinates.lng], {
@@ -110,20 +147,34 @@ const HotelMap: React.FC<HotelMapProps> = ({
 
   return (
     <div className="relative w-full h-full min-h-screen bg-background">
-      {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-[1000] p-6 bg-gradient-to-b from-background via-background/80 to-transparent">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-gold/10 border border-gold/20">
-            <Navigation size={18} className="text-gold" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-foreground">Mapa Global</h2>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-              {hotels.length} Propriedades Ativas
-            </p>
+      {/* Sovereign Feed Header */}
+      <div className="absolute top-4 left-4 right-4 z-[1000] flex items-center justify-between gap-3">
+        {/* Status Indicator */}
+        <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-black/70 backdrop-blur-xl border border-white/10">
+          <div className="w-2 h-2 rounded-full bg-emerald-500/80 animate-pulse" />
+          <div className="flex flex-col">
+            <span className="text-[8px] font-black text-white/80 uppercase tracking-widest">Sovereign Feed</span>
+            <span className="text-[7px] text-white/40 font-mono">LAT: {mapCenter.lat} / LNG: {mapCenter.lng}</span>
           </div>
         </div>
+
+        {/* Atualizar Área Button */}
+        <button 
+          onClick={handleRefreshArea}
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/70 backdrop-blur-xl border border-gold/30 text-gold text-[10px] font-black uppercase tracking-wider transition-all hover:bg-gold/10 active:scale-95"
+        >
+          <RefreshCw size={12} />
+          <span>Atualizar Área</span>
+        </button>
       </div>
+
+      {/* Compass Button */}
+      <button 
+        onClick={handleResetView}
+        className="absolute top-20 right-4 z-[1000] p-3 rounded-full bg-black/70 backdrop-blur-xl border border-white/10 text-white/60 transition-all hover:text-gold hover:border-gold/30 active:scale-95"
+      >
+        <Compass size={20} />
+      </button>
 
       {/* Map Container */}
       <div ref={mapRef} className="absolute inset-0 z-0" />
