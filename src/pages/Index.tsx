@@ -79,7 +79,7 @@ const Index = () => {
                   </div>
                 </div>
 
-                <div className="flex overflow-x-auto gap-8 px-12 pb-12 snap-x snap-mandatory hide-scrollbar">
+                <div className="flex overflow-x-auto gap-8 px-12 pb-12 snap-x snap-mandatory hide-scrollbar cursor-grab active:cursor-grabbing">
                   {MOCK_HOTELS.map(h => (
                     <div key={h.id} className="min-w-[320px] snap-center">
                       <HotelCard

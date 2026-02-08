@@ -71,7 +71,7 @@ const HotelCard: React.FC<HotelCardProps> = ({
           <div>
             <span className="text-[10px] text-white/40 uppercase tracking-widest">Desde</span>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-black text-white">€{hotel.price.toLocaleString()}</span>
+              <span className="text-2xl font-black text-white">${hotel.price.toLocaleString()}</span>
               <span className="text-[10px] text-white/40">/noite</span>
             </div>
           </div>
