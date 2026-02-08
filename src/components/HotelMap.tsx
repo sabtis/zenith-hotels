@@ -38,8 +38,8 @@ const HotelMap: React.FC<HotelMapProps> = ({
       maxZoom: 18,
     });
 
-    // Tiles escuros com estilo Zenith
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    // Tiles coloridos com estilo elegante
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       maxZoom: 19,
     }).addTo(map);
 
