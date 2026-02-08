@@ -68,6 +68,88 @@ export async function processSovereignSearch(
   }
 }
 
+export async function streamSovereignSearch(
+  query: string,
+  hotels: Hotel[],
+  onDelta: (text: string) => void,
+  onDone: (recommendedIds: string[]) => void
+): Promise<void> {
+  const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sovereign-oracle`;
+
+  try {
+    const resp = await fetch(CHAT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({
+        action: "sovereign-search-stream",
+        payload: {
+          query,
+          hotels: hotels.map((h) => ({
+            id: h.id,
+            name: h.name,
+            location: h.location,
+            tier: h.tier,
+          })),
+        },
+      }),
+    });
+
+    if (!resp.ok || !resp.body) {
+      throw new Error("Stream failed");
+    }
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let textBuffer = "";
+    let fullText = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      textBuffer += decoder.decode(value, { stream: true });
+
+      let newlineIndex: number;
+      while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+        let line = textBuffer.slice(0, newlineIndex);
+        textBuffer = textBuffer.slice(newlineIndex + 1);
+
+        if (line.endsWith("\r")) line = line.slice(0, -1);
+        if (line.startsWith(":") || line.trim() === "") continue;
+        if (!line.startsWith("data: ")) continue;
+
+        const jsonStr = line.slice(6).trim();
+        if (jsonStr === "[DONE]") break;
+
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+          if (content) {
+            fullText += content;
+            onDelta(content);
+          }
+        } catch {
+          textBuffer = line + "\n" + textBuffer;
+          break;
+        }
+      }
+    }
+
+    // Extract hotel IDs from response like [hotel-1, hotel-2]
+    const idMatch = fullText.match(/\[([^\]]+)\]/);
+    const recommendedIds = idMatch
+      ? idMatch[1].split(",").map((id) => id.trim())
+      : hotels.map((h) => h.id);
+
+    onDone(recommendedIds);
+  } catch {
+    onDelta("Protocolo de Contingência Zenith: Modo streaming offline.");
+    onDone(hotels.map((h) => h.id));
+  }
+}
+
 export async function getHotelInsight(hotel: Hotel): Promise<string> {
   try {
     const result = await callOracle<{ text: string }>("hotel-insight", {
