@@ -1,50 +1,43 @@
-const CACHE_NAME = 'luxvago-zenith-v10';
+const CACHE_NAME = 'luxvago-zenith-v10.0.0';
 
-const urlsToCache = [
+const ASSETS = [
   '/',
-  '/index.html'
+  '/index.html',
+  '/manifest.json'
 ];
 
-// Install event
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Zenith Cache Opened');
-        return cache.addAll(urlsToCache);
-      })
-  );
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+  );
 });
 
-// Activate event - clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then((keys) => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Zenith Purging Old Cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
       );
     })
   );
-  self.clients.claim();
+  return self.clients.claim();
 });
 
-// Fetch event - network first, fallback to cache
 self.addEventListener('fetch', (event) => {
+  // Ignorar requisições para a API GenAI para não cachear respostas dinâmicas
+  if (event.request.url.includes('/api/')) {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
-      .then((response) => {
-        // Clone the response
-        const responseClone = response.clone();
-        caches.open(CACHE_NAME)
-          .then((cache) => {
-            cache.put(event.request, responseClone);
-          });
+      .then(response => {
+        if (!response || response.status !== 200) {
+          return response;
+        }
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseToCache));
         return response;
       })
       .catch(() => caches.match(event.request))
