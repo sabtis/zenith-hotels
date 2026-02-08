@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, lazy, Suspense } from 'react';
 import { Search, RefreshCcw, Home, Map as MapIcon, User, Fingerprint, Loader2, Signal, Zap, Activity } from 'lucide-react';
 import { MOCK_HOTELS, APP_VERSION } from '../constants';
 import HotelCard from '../components/HotelCard';
-import { processSovereignSearch } from '../services/aiService';
+import { streamSovereignSearch } from '../services/aiService';
 
 const AccountScreen = lazy(() => import('../components/AccountScreen'));
 const HotelMap = lazy(() => import('../components/HotelMap'));
@@ -39,15 +39,22 @@ const Index = () => {
     }
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
     setIsSearching(true);
-    const res = await processSovereignSearch(searchQuery, MOCK_HOTELS);
-    setRecommendedIds(res.recommendedIds || []);
-    setAiBriefing(res.strategicBriefing);
-    setIsSearching(false);
-  };
+    setAiBriefing("");
+
+    await streamSovereignSearch(
+      searchQuery,
+      MOCK_HOTELS,
+      (delta) => setAiBriefing((prev) => (prev || "") + delta),
+      (ids) => {
+        setRecommendedIds(ids);
+        setIsSearching(false);
+      }
+    );
+  }, [searchQuery]);
 
   const displayedHotels = useMemo(() =>
     recommendedIds.length ? MOCK_HOTELS.filter(h => recommendedIds.includes(h.id)) : MOCK_HOTELS

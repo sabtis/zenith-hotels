@@ -29,6 +29,52 @@ serve(async (req) => {
     let responseFormat: any = undefined;
 
     switch (action) {
+      case "sovereign-search-stream": {
+        const { query, hotels } = payload;
+        const streamPrompt = `Comando de Busca Soberana: "${query}"
+
+Inventário de Ativos Zenith:
+${JSON.stringify(hotels.map((h: any) => ({ id: h.id, name: h.name, location: h.location, tier: h.tier })), null, 2)}
+
+Responda com uma análise estratégica ultra-sofisticada em 2-3 frases poderosas. Seja direto e seco. Mencione os IDs dos hotéis recomendados no início entre colchetes, ex: [hotel-1, hotel-2]`;
+
+        const messages = [
+          { role: "system", content: SYSTEM_CORE },
+          { role: "user", content: streamPrompt }
+        ];
+
+        const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ 
+            model: "google/gemini-3-flash-preview", 
+            messages,
+            stream: true 
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          if (response.status === 429 || response.status === 402) {
+            return new Response(JSON.stringify({ 
+              error: response.status === 429 ? "Rate limit" : "Credits",
+              fallback: getFallbackResponse("sovereign-search", payload)
+            }), {
+              status: response.status,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+          throw new Error(`AI Gateway error: ${response.status} - ${errorText}`);
+        }
+
+        return new Response(response.body, {
+          headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+        });
+      }
+
       case "sovereign-search": {
         const { query, hotels } = payload;
         model = "google/gemini-3-pro-preview";
