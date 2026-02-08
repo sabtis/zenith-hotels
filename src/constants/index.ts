@@ -1,3 +1,9 @@
+import hotelLisbon from '@/assets/hotel-lisbon-palace.jpg';
+import hotelNice from '@/assets/hotel-nice-villa.jpg';
+import hotelTokyo from '@/assets/hotel-tokyo-obsidian.jpg';
+import hotelParis from '@/assets/hotel-paris-maison.jpg';
+import hotelSantorini from '@/assets/hotel-santorini-ethereal.jpg';
+
 export interface Hotel {
   id: string;
   name: string;
@@ -24,9 +30,9 @@ export const MOCK_HOTELS: Hotel[] = [
     country: 'Portugal',
     price: 2400,
     rating: 9.8,
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
-    description: 'Refúgio de ultra-luxo com vista para o Tejo',
-    amenities: ['Spa Privativo', 'Heliponto', 'Chef Michelin', 'Marina'],
+    image: hotelLisbon,
+    description: 'Onde o barroco encontra a vanguarda. Vista panorâmica do Tejo, piscina de borda infinita suspensa e serviço de mordomo 24h.',
+    amenities: ['Spa Privativo', 'Heliponto', 'Chef Michelin', 'Marina', 'Wine Cellar'],
     coordinates: { lat: 38.7223, lng: -9.1393 },
     tier: 'Zenith',
     availableRooms: 3,
@@ -38,9 +44,9 @@ export const MOCK_HOTELS: Hotel[] = [
     country: 'França',
     price: 3200,
     rating: 9.9,
-    image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80',
-    description: 'Elegância mediterrânea absoluta',
-    amenities: ['Praia Privativa', 'Iate', 'Adega', 'Butler 24h'],
+    image: hotelNice,
+    description: 'Elegância mediterrânea absoluta. Praia privativa de águas cristalinas, iate exclusivo e acesso direto ao mar turquesa.',
+    amenities: ['Praia Privativa', 'Iate 80ft', 'Adega Francesa', 'Butler 24h', 'Helipad'],
     coordinates: { lat: 43.7102, lng: 7.2620 },
     tier: 'Zenith',
     availableRooms: 2,
@@ -52,9 +58,9 @@ export const MOCK_HOTELS: Hotel[] = [
     country: 'Japão',
     price: 2800,
     rating: 9.7,
-    image: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80',
-    description: 'Minimalismo japonês em altitude',
-    amenities: ['Onsen Privativo', 'Jardim Zen', 'Omakase', 'Tatami Suite'],
+    image: hotelTokyo,
+    description: 'Minimalismo japonês em altitude vertiginosa. Jardim zen suspenso, onsen privativo e vista 360° da metrópole iluminada.',
+    amenities: ['Onsen Privativo', 'Jardim Zen', 'Omakase 3★', 'Tatami Suite', 'Sky Lounge'],
     coordinates: { lat: 35.6762, lng: 139.6503 },
     tier: 'Elite',
     availableRooms: 4,
@@ -66,9 +72,9 @@ export const MOCK_HOTELS: Hotel[] = [
     country: 'França',
     price: 4500,
     rating: 10.0,
-    image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80',
-    description: 'O epítome do luxo parisiense',
-    amenities: ['Suíte Eiffel', 'Sommelier', 'Galeria Privada', 'Limusine'],
+    image: hotelParis,
+    description: 'O epítome do luxo parisiense. Palácio Belle Époque com vista direta para a Torre Eiffel e jardins à francesa impecáveis.',
+    amenities: ['Vista Eiffel', 'Sommelier Privé', 'Galeria de Arte', 'Limusine Maybach', 'Spa Dior'],
     coordinates: { lat: 48.8566, lng: 2.3522 },
     tier: 'Zenith',
     availableRooms: 1,
@@ -76,14 +82,14 @@ export const MOCK_HOTELS: Hotel[] = [
   {
     id: '5',
     name: 'Santorini Ethereal',
-    location: 'Santorini',
+    location: 'Oia',
     country: 'Grécia',
     price: 2100,
     rating: 9.6,
-    image: 'https://images.unsplash.com/photo-1570213489059-0aac6626cade?w=800&q=80',
-    description: 'Suspenso entre o céu e o mar Egeu',
-    amenities: ['Infinity Pool', 'Cave Suite', 'Sunset Deck', 'Catamaran'],
-    coordinates: { lat: 36.3932, lng: 25.4615 },
+    image: hotelSantorini,
+    description: 'Suspenso entre céu e mar Egeu. Suítes esculpidas na rocha vulcânica com infinity pool privativa e pôr do sol lendário.',
+    amenities: ['Infinity Pool', 'Cave Suite', 'Sunset Deck', 'Catamarã', 'Spa Volcanic'],
+    coordinates: { lat: 36.4618, lng: 25.3753 },
     tier: 'Elite',
     availableRooms: 5,
   },
