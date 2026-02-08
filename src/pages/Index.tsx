@@ -8,6 +8,7 @@ const AccountScreen = lazy(() => import('../components/AccountScreen'));
 const HotelMap = lazy(() => import('../components/HotelMap'));
 const PinLock = lazy(() => import('../components/PinLock'));
 const FinancialDashboard = lazy(() => import('../components/FinancialDashboard'));
+const AdminDashboard = lazy(() => import('../components/AdminDashboard'));
 const Index = () => {
   const [view, setView] = useState<'home' | 'detail' | 'map' | 'account'>('home');
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,6 +19,7 @@ const Index = () => {
   const [showPinLock, setShowPinLock] = useState(false);
   const [isAccountUnlocked, setIsAccountUnlocked] = useState(false);
   const [showFinancial, setShowFinancial] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
   const [aiBriefing, setAiBriefing] = useState<string | null>(null);
 
   useEffect(() => {
@@ -154,7 +156,7 @@ const Index = () => {
             {view === 'account' && (
               <AccountScreen 
                 stats={{} as any} 
-                onOpenAdmin={() => { }} 
+                onOpenAdmin={() => setShowAdmin(true)} 
                 onOpenBusiness={() => setShowFinancial(true)} 
                 currentTheme="dark" 
                 onToggleTheme={() => { }} 
@@ -176,6 +178,7 @@ const Index = () => {
               />
             )}
             {showFinancial && <FinancialDashboard onClose={() => { setShowFinancial(false); setView('home'); }} />}
+            {showAdmin && <AdminDashboard onClose={() => { setShowAdmin(false); setView('home'); }} />}
           </Suspense>
         </main>
 

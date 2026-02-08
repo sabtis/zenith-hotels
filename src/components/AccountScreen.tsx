@@ -1,5 +1,5 @@
 import React from 'react';
-import { Crown, Trophy, Gift, Settings, ChevronRight, Star, Zap, Users, Calendar } from 'lucide-react';
+import { Crown, Trophy, Gift, Settings, ChevronRight, Star, Zap, Users, Calendar, Shield } from 'lucide-react';
 
 interface AccountStats {
   totalSaved: number;
@@ -25,6 +25,7 @@ interface AccountScreenProps {
 
 const AccountScreen: React.FC<AccountScreenProps> = ({
   stats,
+  onOpenAdmin,
   onOpenBusiness,
   onLogout,
 }) => {
@@ -129,8 +130,23 @@ const AccountScreen: React.FC<AccountScreenProps> = ({
         </div>
       </div>
 
-      {/* Business CTA */}
+      {/* Admin & Business CTA */}
       <div className="p-8 space-y-3">
+        {/* Gabinete HQ - Only visible to admin */}
+        <button
+          onClick={onOpenAdmin}
+          className="w-full p-5 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-between transition-all hover:bg-zinc-800 active:scale-[0.98]"
+        >
+          <div className="flex items-center gap-4">
+            <Shield size={20} className="text-gold" />
+            <div className="text-left">
+              <p className="text-sm font-bold text-white">Gabinete HQ</p>
+              <p className="text-[10px] text-white/40">Sovereign Command</p>
+            </div>
+          </div>
+          <ChevronRight size={18} className="text-white/30" />
+        </button>
+
         <button
           onClick={onOpenBusiness}
           className="w-full p-5 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-between transition-all hover:bg-gold/15 active:scale-[0.98]"
