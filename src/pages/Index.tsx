@@ -1,164 +1,208 @@
-import React, { useState } from 'react';
-import { Home, Map, User, ShieldAlert, Crown } from 'lucide-react';
-import { MOCK_HOTELS } from '../constants';
+import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import { Search, RefreshCcw, Home, Map as MapIcon, User, Fingerprint, Loader2, Signal, Zap, Activity } from 'lucide-react';
+import { MOCK_HOTELS, APP_VERSION } from '../constants';
 import HotelCard from '../components/HotelCard';
-import AdminDashboard from '../components/AdminDashboard';
-import AccountScreen from '../components/AccountScreen';
-import PartnershipScreen from '../components/PartnershipScreen';
-import HotelMap from '../components/HotelMap';
+import { processSovereignSearch } from '../services/aiService';
+
+const AccountScreen = lazy(() => import('../components/AccountScreen'));
+const HotelMap = lazy(() => import('../components/HotelMap'));
 
 const Index = () => {
-  const [view, setView] = useState<'home' | 'map' | 'account' | 'business'>('home');
-  const [showAdmin, setShowAdmin] = useState(false);
-  const [selectedHotelId, setSelectedHotelId] = useState<string | null>(null);
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [view, setView] = useState<'home' | 'detail' | 'map' | 'account'>('home');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [isBooting, setIsBooting] = useState(true);
+  const [isRecalibrating, setIsRecalibrating] = useState(false);
+  const [recommendedIds, setRecommendedIds] = useState<string[]>([]);
+  const [aiBriefing, setAiBriefing] = useState<string | null>(null);
   const [wishlist, setWishlist] = useState<string[]>([]);
-  const APP_VERSION = "v10.0.0 ZENITH-NUCLEAR";
 
+  useEffect(() => {
+    const timer = setTimeout(() => setIsBooting(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Protocolo de Recalibração Manual (Mobile Hard Reset)
   const forceSync = async () => {
-    setIsSyncing(true);
-    if ('serviceWorker' in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      for (const reg of registrations) await reg.unregister();
-    }
-    const names = await caches.keys();
-    for (const name of names) await caches.delete(name);
-    setTimeout(() => {
+    setIsRecalibrating(true);
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const r of regs) await r.unregister();
+      }
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+      setTimeout(() => window.location.reload(), 1000);
+    } catch {
       window.location.reload();
-    }, 500);
+    }
   };
 
-  const handleSelectHotel = (id: string) => {
-    setSelectedHotelId(id);
-    setView('map');
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    setIsSearching(true);
+    try {
+      const res = await processSovereignSearch(searchQuery, MOCK_HOTELS);
+      setRecommendedIds(res.recommendedIds || []);
+      setAiBriefing(res.strategicBriefing);
+    } catch (error) {
+      console.error('Search error:', error);
+      setAiBriefing('Protocolo de Contingência: Exibindo inventário completo.');
+    }
+    setIsSearching(false);
   };
 
   const toggleWishlist = (id: string) => {
-    setWishlist(prev => 
+    setWishlist(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
 
+  const displayedHotels = useMemo(() =>
+    recommendedIds.length ? MOCK_HOTELS.filter(h => recommendedIds.includes(h.id)) : MOCK_HOTELS
+    , [recommendedIds]);
+
+  if (isBooting) return (
+    <div className="h-screen bg-black flex flex-col items-center justify-center space-y-6">
+      <div className="w-16 h-16 border-4 border-gold/20 border-t-gold rounded-full animate-spin" />
+      <div className="text-gold font-black text-[10px] uppercase tracking-[0.6em] animate-pulse">Zenith OS v{APP_VERSION}</div>
+    </div>
+  );
+
   return (
-    <div className="w-full min-h-screen flex justify-center bg-[#050505] font-sans select-none touch-pan-y">
-      <div className="w-full max-w-[430px] min-h-screen relative flex flex-col bg-[#050505] text-white border-x border-white/5 shadow-[0_0_100px_rgba(0,0,0,0.8)]">
+    <div className="w-full min-h-[100dvh] bg-background flex justify-center">
+      <div className="w-full max-w-[430px] h-[100dvh] flex flex-col bg-[#050505] relative overflow-hidden shadow-2xl border-x border-white/5">
 
-        <div className="flex-1 overflow-y-auto hide-scrollbar pb-32">
+        <header className="p-6 pb-4 border-b border-white/5 sticky top-0 z-50 bg-black/80 backdrop-blur-xl safe-area-inset-top">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gold rounded-lg flex items-center justify-center font-black text-background shadow-[0_15px_40px_-10px_rgba(212,175,55,0.4)]">LV</div>
+              <div>
+                <p className="text-[10px] font-black uppercase text-white tracking-widest leading-none">LuxVago Privé</p>
+                <p className="text-[7px] text-zinc-600 font-bold uppercase tracking-widest mt-1">v{APP_VERSION}</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={forceSync} className="p-2.5 bg-white/5 rounded-full text-zinc-500 active:scale-90 transition-all">
+                <RefreshCcw size={16} className={isRecalibrating ? 'animate-spin text-gold' : ''} />
+              </button>
+              <button onClick={() => setView('account')} className="p-2.5 bg-white/5 rounded-full text-zinc-500 active:scale-90">
+                <Fingerprint size={16} />
+              </button>
+            </div>
+          </div>
+
+          <form onSubmit={handleSearch} className="relative group">
+            <input
+              value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Instruir Oráculo Zenith..."
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm text-white outline-none focus:border-gold/50 transition-all placeholder:text-zinc-700"
+            />
+            <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-gold text-background rounded-xl shadow-lg active:scale-90 transition-all">
+              {isSearching ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} strokeWidth={3} />}
+            </button>
+          </form>
+        </header>
+
+        <main className="flex-1 overflow-y-auto hide-scrollbar pb-32 overscroll-contain">
           {view === 'home' && (
-            <div className="animate-in fade-in duration-700">
-              <header className="p-12 pb-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h1 className="text-4xl serif italic text-white leading-none tracking-tight">LuxVago <span className="text-gold">Privé</span></h1>
-                    <div className="flex items-center gap-3 mt-4">
-                      <p className="text-[9px] text-gold font-black uppercase tracking-[0.5em] opacity-80">Soberania Hoteleira | {APP_VERSION}</p>
-                      <button
-                        onClick={forceSync}
-                        className={`px-3 py-1 bg-gold/10 border border-gold/20 rounded-full text-[7px] font-black text-gold uppercase tracking-widest transition-all active:scale-90 ${isSyncing ? 'animate-pulse' : ''}`}
-                      >
-                        {isSyncing ? 'Recalibrando...' : 'Recalibrar Conexão'}
-                      </button>
-                    </div>
-                  </div>
-                  <button onClick={() => setShowAdmin(true)} className="p-3 bg-white/5 rounded-2xl text-gold/30 hover:text-gold transition-all">
-                    <ShieldAlert size={20} />
-                  </button>
+            <div className="p-6 space-y-10">
+              {aiBriefing && (
+                <div className="bg-gold/5 border border-gold/20 p-8 rounded-3xl animate-in fade-in duration-700">
+                  <p className="text-[14px] italic serif text-gold leading-relaxed">"{aiBriefing}"</p>
                 </div>
-              </header>
-              <main className="px-0 relative">
-                <div className="px-12 mb-12 space-y-4">
-                  <div className="flex gap-4">
-                    <div className="flex-1 p-4 bg-white/5 border border-white/10 rounded-3xl">
-                      <p className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Rede Global</p>
-                      <p className="text-lg font-black text-white leading-none tracking-tighter">05 Ativos <span className="text-emerald-500 text-[10px]">+1</span></p>
-                    </div>
-                    <div className="flex-1 p-4 bg-white/5 border border-white/10 rounded-3xl">
-                      <p className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Volume de Aderência</p>
-                      <p className="text-lg font-black text-white leading-none tracking-tighter">$14.2M</p>
-                    </div>
-                  </div>
+              )}
+
+              <div className="space-y-6">
+                <div className="flex justify-between items-end px-2">
+                  <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-white">Registry Soberano</h2>
+                  <span className="text-[8px] text-zinc-600 font-bold uppercase">{displayedHotels.length} Ativos</span>
                 </div>
 
-                <div className="flex overflow-x-auto gap-8 px-12 pb-12 snap-x snap-mandatory hide-scrollbar cursor-grab active:cursor-grabbing">
-                  {MOCK_HOTELS.map(h => (
-                    <div key={h.id} className="min-w-[320px] snap-center">
+                <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-6 hide-scrollbar -mx-2 px-2 cursor-grab active:cursor-grabbing">
+                  {displayedHotels.map(h => (
+                    <div key={h.id} className="min-w-[85vw] max-w-[320px] snap-center">
                       <HotelCard
                         hotel={h}
-                        onClick={() => handleSelectHotel(h.id)}
-                        isDarkMode={true}
                         isWishlisted={wishlist.includes(h.id)}
                         onToggleWishlist={() => toggleWishlist(h.id)}
+                        onClick={() => setView('map')}
+                        isDarkMode={true}
                       />
                     </div>
                   ))}
-                  <div className="min-w-[100px]" /> {/* Spacer for end padding */}
                 </div>
+              </div>
 
-                <div className="px-12 pt-8 border-t border-white/5">
-                  <div className="p-8 bg-gold/5 border border-gold/10 rounded-[2.5rem] relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-6 opacity-20"><Crown size={40} className="text-gold" /></div>
-                    <h4 className="text-xs font-black text-gold uppercase tracking-[0.3em] mb-4">Gabinete do Arquiteto</h4>
-                    <p className="text-[11px] text-zinc-400 leading-relaxed serif italic">
-                      "O protocolo Zenith não é apenas uma reserva; é a sincronização de soberanias em nós de ultra-luxo."
-                    </p>
-                  </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="p-5 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center gap-1">
+                  <Signal size={14} className="text-emerald-500 mb-1" />
+                  <span className="text-[7px] font-black text-zinc-500 uppercase tracking-widest">Network</span>
+                  <span className="text-[10px] font-bold text-white uppercase">Secure</span>
                 </div>
-              </main>
+                <div className="p-5 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center gap-1">
+                  <Zap size={14} className="text-gold mb-1" />
+                  <span className="text-[7px] font-black text-zinc-500 uppercase tracking-widest">Oracle</span>
+                  <span className="text-[10px] font-bold text-white uppercase">Sovereign</span>
+                </div>
+                <div className="p-5 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center gap-1">
+                  <Activity size={14} className="text-purple-500 mb-1" />
+                  <span className="text-[7px] font-black text-zinc-500 uppercase tracking-widest">Status</span>
+                  <span className="text-[10px] font-bold text-white uppercase">v{APP_VERSION.split('-')[0]}</span>
+                </div>
+              </div>
             </div>
           )}
 
-          {view === 'map' && (
-            <div className="h-full w-full animate-in zoom-in-95 duration-500">
+          <Suspense fallback={<div className="p-20 text-center text-gold text-[10px] font-black uppercase tracking-[0.4em] animate-pulse">Sincronizando Módulo...</div>}>
+            {view === 'account' && (
+              <AccountScreen
+                stats={{
+                  totalSaved: 4200,
+                  tripsCompleted: 8,
+                  zenithPoints: 12450,
+                  memberSince: 'Out 2024',
+                  tier: 'Zenith',
+                  honorProgress: 92,
+                  referralsCount: 3
+                }}
+                onOpenAdmin={() => { }}
+                onOpenBusiness={() => { }}
+                currentTheme="dark"
+                onToggleTheme={() => { }}
+                swStatus="active"
+                isInstallReady={false}
+                onInstallApp={async () => true}
+              />
+            )}
+            {view === 'map' && (
               <HotelMap
                 hotels={MOCK_HOTELS}
-                initialSelectedId={selectedHotelId}
-                onSelectHotel={(h) => setSelectedHotelId(h.id)}
+                initialSelectedId={null}
+                onSelectHotel={() => { }}
                 isWishlisted={(id) => wishlist.includes(id)}
                 onToggleWishlist={toggleWishlist}
                 isDarkMode={true}
               />
-            </div>
-          )}
+            )}
+          </Suspense>
+        </main>
 
-          {view === 'account' && (
-            <AccountScreen
-              stats={{
-                totalSaved: 4200,
-                tripsCompleted: 8,
-                zenithPoints: 12450,
-                memberSince: 'Out 2024',
-                tier: 'Zenith',
-                honorProgress: 92,
-                referralsCount: 3
-              }}
-              onOpenAdmin={() => setShowAdmin(true)}
-              onOpenBusiness={() => setView('business')}
-              currentTheme="dark"
-              onToggleTheme={() => {}}
-              swStatus="active"
-              isInstallReady={false}
-              onInstallApp={async () => true}
-            />
-          )}
-
-          {view === 'business' && (
-            <PartnershipScreen isDarkMode={true} />
-          )}
-        </div>
-
-        {/* HQ Dashboard - Camada Máxima */}
-        {showAdmin && <AdminDashboard onClose={() => setShowAdmin(false)} />}
-
-        {/* Barra de Navegação Zenith - Fixed para garantir visual PWA */}
-        <nav className="shrink-0 h-24 backdrop-blur-3xl border-t border-white/5 px-12 flex justify-between items-center bg-black/80 z-[1000] fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px]">
-          <button onClick={() => setView('home')} className={`p-4 transition-all duration-300 ${view === 'home' ? 'text-gold scale-125' : 'text-zinc-600 hover:text-zinc-400'}`}>
+        <nav className="h-20 border-t border-white/5 bg-black/90 backdrop-blur-3xl fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto flex justify-around items-center px-10 pb-2 z-[100] shadow-2xl safe-area-inset-bottom">
+          <button onClick={() => setView('home')} className={`flex flex-col items-center gap-1 transition-all ${view === 'home' ? 'text-gold scale-110' : 'text-zinc-600'}`}>
             <Home size={22} />
+            <span className="text-[7px] font-black uppercase">Home</span>
           </button>
-          <button onClick={() => setView('map')} className={`p-4 transition-all duration-300 ${view === 'map' ? 'text-gold scale-125' : 'text-zinc-600 hover:text-zinc-400'}`}>
-            <Map size={22} />
+          <button onClick={() => setView('map')} className={`flex flex-col items-center gap-1 transition-all ${view === 'map' ? 'text-gold scale-110' : 'text-zinc-600'}`}>
+            <MapIcon size={22} />
+            <span className="text-[7px] font-black uppercase">Mapa</span>
           </button>
-          <button onClick={() => setView('account')} className={`p-4 transition-all duration-300 ${['account', 'business'].includes(view) ? 'text-gold scale-125' : 'text-zinc-600 hover:text-zinc-400'}`}>
+          <button onClick={() => setView('account')} className={`flex flex-col items-center gap-1 transition-all ${view === 'account' ? 'text-gold scale-110' : 'text-zinc-600'}`}>
             <User size={22} />
+            <span className="text-[7px] font-black uppercase">Conta</span>
           </button>
         </nav>
       </div>
